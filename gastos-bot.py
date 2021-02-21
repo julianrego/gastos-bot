@@ -99,6 +99,40 @@ def process_messages(update, context):
                 gastos.to_csv(filename, index=False)
                 update.message.reply_text('Gasto añadido')
 
+def get_balance(update, context):
+
+    filename = f'gastos_{update.message.chat_id}.csv'
+
+    df_gastos = pd.read_csv(filename)
+
+    gastos = df_gastos.groupby('usuario')['monto'].sum().to_dict()
+
+    if len(df_gastos)==0:
+        context.bot.send_message(chat_id=update.message.chat_id, text='No hay gastos nuevos desde la ultima vez saldada')
+
+    else:
+        mensaje_1 = [f'{usuario} gastó {monto}' for usuario, monto in gastos.items()]
+        mensaje_1 = '\n'.join(mensaje_1)
+
+        cant_usuarios = len(df_gastos['usuario'].unique())
+        gasto_total = df_gastos['monto'].sum()
+        promedio = gasto_total / cant_usuarios
+
+        mensaje_2 = [f"{usuario} puso {abs(monto-promedio)} de {'menos' if monto-promedio<0 else 'mas'}" for usuario, monto in gastos.items()]
+        mensaje_2 = '\n'.join(mensaje_2)
+
+        mensaje = f"En total se gasto {gasto_total}\n \n" + mensaje_1 + "\n \n" + mensaje_2
+
+        context.bot.send_message(chat_id=update.message.chat_id, text=mensaje)
+
+def volver_a_cero(update, context):
+
+    filename = f'gastos_{update.message.chat_id}.csv'
+
+    pd.DataFrame(columns=['datetime','usuario', 'concepto', 'monto']).to_csv(filename, index=False)
+
+    context.bot.send_message(chat_id=update.message.chat_id, text="Saldado. Cuenta reiniciada a cero")
+
 
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
@@ -106,7 +140,10 @@ dispatcher.add_handler(start_handler)
 echo_handler = MessageHandler(Filters.text & (~Filters.command), process_messages)
 dispatcher.add_handler(echo_handler)
 
-#caps_handler = CommandHandler('caps', caps)
-#dispatcher.add_handler(caps_handler)
+balance_expenses = CommandHandler('balance', get_balance)
+dispatcher.add_handler(balance_expenses)
+
+saldar = CommandHandler('saldar', volver_a_cero)
+dispatcher.add_handler(saldar)
 
 updater.start_polling()
