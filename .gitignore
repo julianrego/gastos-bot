@@ -4,8 +4,6 @@ token.txt
 #gastos
 *.csv
 
-#Procfile
-Procfile
 
 # Editors
 .vscode/
