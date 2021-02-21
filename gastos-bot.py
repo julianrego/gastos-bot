@@ -9,7 +9,7 @@ logging.basicConfig(filename='log-bot-gastos.log',
                     level=logging.INFO)
 
 
-__TOKEN__ = = os.environ['TOKEN']
+__TOKEN__ = os.environ['TOKEN']
 
 PORT = int(os.environ.get('PORT', 5000))
 
