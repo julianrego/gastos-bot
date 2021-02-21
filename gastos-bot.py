@@ -8,8 +8,8 @@ logging.basicConfig(filename='log-bot-gastos.log',
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
-with open('token.txt', 'r') as f:
-    __TOKEN__ = f.read()
+
+__TOKEN__ = = os.environ['TOKEN']
 
 PORT = int(os.environ.get('PORT', 5000))
 
