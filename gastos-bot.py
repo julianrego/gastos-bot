@@ -11,8 +11,7 @@ logging.basicConfig(filename='log-bot-gastos.log',
 with open('token.txt', 'r') as f:
     __TOKEN__ = f.read()
 
-updater = Updater(token=__TOKEN__, use_context=True)
-dispatcher = updater.dispatcher
+PORT = int(os.environ.get('PORT', 5000))
 
 def represents_int(s):
     try: 
@@ -133,6 +132,12 @@ def volver_a_cero(update, context):
 
     context.bot.send_message(chat_id=update.message.chat_id, text="Saldado. Cuenta reiniciada a cero")
 
+def error(update, context):
+    """Log Errors caused by Updates."""
+    logger.warning('Update "%s" caused error "%s"', update, context.error)
+
+updater = Updater(token=__TOKEN__, use_context=True)
+dispatcher = updater.dispatcher
 
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
@@ -145,5 +150,14 @@ dispatcher.add_handler(balance_expenses)
 
 saldar = CommandHandler('saldar', volver_a_cero)
 dispatcher.add_handler(saldar)
+
+dispatcher.add_error_handler(error)
+
+updater.start_webhook(listen="0.0.0.0",
+                          port=int(PORT),
+                          url_path=__OKEN__)
+updater.bot.setWebhook('https://gastos-hogar-bot.herokuapp.com/' + __TOKEN__)
+
+updater.idle()
 
 updater.start_polling()
